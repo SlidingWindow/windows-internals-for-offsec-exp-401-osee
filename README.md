@@ -180,4 +180,80 @@ Lower IRQL after ISR completes
 
 <img width="1536" height="1024" alt="image" src="https://github.com/user-attachments/assets/9731ef83-6ec2-41bc-9ffd-89dd669ad6ff" />
 
+---
+
+`_kinterrupt` in the ReactOS repo is (in practice) referring to the Windows kernel’s **interrupt object type**: `struct _KINTERRUPT` (often written as `_KINTERRUPT`, and used via pointers like `PKINTERRUPT` / `struct _KINTERRUPT*`).
+
+You can see the definition here:
+
+```c name=sdk/include/ndk/ketypes.h url=https://github.com/reactos/reactos/blob/c9e73b6a77c9f1745d2c6fb7e9121d48a4a6ac3c/sdk/include/ndk/ketypes.h#L1037-L1115
+typedef struct _KINTERRUPT
+{
+    CSHORT Type;
+    CSHORT Size;
+    LIST_ENTRY InterruptListEntry;
+    PKSERVICE_ROUTINE ServiceRoutine;
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    PKSERVICE_ROUTINE MessageServiceRoutine;
+    ULONG MessageIndex;
+#endif
+    PVOID ServiceContext;
+    KSPIN_LOCK SpinLock;
+    ULONG TickCount;
+    PKSPIN_LOCK ActualLock;
+    PKINTERRUPT_ROUTINE DispatchAddress;
+    ULONG Vector;
+    KIRQL Irql;
+    KIRQL SynchronizeIrql;
+    BOOLEAN FloatingSave;
+    BOOLEAN Connected;
+    CCHAR Number;
+    BOOLEAN ShareVector;
+    KINTERRUPT_MODE Mode;
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    KINTERRUPT_POLARITY Polarity;
+#endif
+    ULONG ServiceCount;
+    ULONG DispatchCount;
+#if (NTDDI_VERSION >= NTDDI_LONGHORN)
+    ULONGLONG Rsvd1;
+#endif
+#ifdef _M_AMD64
+    PKTRAP_FRAME TrapFrame;
+    PVOID Reserved;
+#endif
+    ULONG DispatchCode[DISPATCH_LENGTH];
+} KINTERRUPT;
+```
+
+### What it represents
+- A `KINTERRUPT` instance represents a **registered hardware interrupt** in the kernel: vector/IRQL, ISR (`ServiceRoutine`), sharing mode, stats/counters, and synchronization fields (spin lock, etc.).
+- Drivers commonly deal with it indirectly via APIs like `IoConnectInterrupt` / `IoConnectInterruptEx`, passing an ISR and context.
+
+Example usage in ReactOS code (ISR signature uses `struct _KINTERRUPT*`):
+
+```c name=win32ss/drivers/videoprt/interrupt.c url=https://github.com/reactos/reactos/blob/c9e73b6a77c9f1745d2c6fb7e9121d48a4a6ac3c/win32ss/drivers/videoprt/interrupt.c#L32-L47
+BOOLEAN NTAPI
+IntVideoPortInterruptRoutine(
+   IN struct _KINTERRUPT *Interrupt,
+   IN PVOID ServiceContext)
+{
+   PVIDEO_PORT_DEVICE_EXTENSION DeviceExtension = ServiceContext;
+
+   ASSERT(DeviceExtension->DriverExtension->InitializationData.HwInterrupt != NULL);
+
+   return DeviceExtension->DriverExtension->InitializationData.HwInterrupt(
+      &DeviceExtension->MiniPortDeviceExtension);
+}
+```
+
+### Note about search completeness
+My code-search tool only returns up to 10 matches per query, so there may be more references elsewhere in the repo.
+
+To browse more occurrences in GitHub’s UI, use:
+```text name=github-search.txt
+https://github.com/reactos/reactos/search?q=_kinterrupt&type=code
+```
+
+If you tell me *where* you saw `_kinterrupt` (file path / snippet), I can explain that specific usage (e.g., why it’s a pointer, how the lock is acquired, etc.).
 
