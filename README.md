@@ -2,8 +2,6 @@
 Windows Kernel Internals for OffSec EXP-401 (OSEE)
 
 
-Perfect! Let’s do a **complete, concise summary of IDT and interrupts in Windows**, including all the nuances we discussed — and I’ll make **diagrams/visuals** to make it crystal clear.
-
 ---
 
 # **Windows IDT and Interrupts – Complete Overview**
