@@ -88,4 +88,254 @@ These are where IRQL becomes really important.
 * **Why “IRQL_NOT_LESS_OR_EQUAL” BSOD happens**
 * **How spinlocks require DISPATCH_LEVEL**
 
+**Modern Twist!**
+
+* High-performance systems avoid interrupts entirely sometimes using polling (NAPI in Linux) or interrupt moderation because interrupts can become a bottleneck at 10–100 Gbps networking speeds.
+
+**Interesting Fact!**
+
+The actual CPU stack changes during an interrupt
+
+Which looks like this:
+
+```
+RIP
+CS
+RFLAGS
+RSP
+SS
+```
+
+The CPU pushes these automatically before jumping to the ISR. It’s one of the coolest parts of CPU architecture.
+
+---
+
+**Hardware Block Diagram (IRQ Path)**
+
++------------------+
+|  Hardware Device |
+|  (NIC, Disk,    |
+|   Keyboard)      |
++---------+--------+
+          |
+          |  IRQ line (electrical signal)
+          |
+          v
++----------------------+
+| Interrupt Controller |
+|  PIC / IO-APIC       |
+|                      |
+|  - collects IRQs     |
+|  - prioritizes them  |
+|  - routes to CPU     |
++----------+-----------+
+           |
+           | Interrupt signal
+           v
++----------------------+
+|      CPU             |
+|  Local APIC / INTR   |
+|                      |
+| CPU pauses execution |
+| and enters interrupt |
+| handling routine     |
++----------+-----------+
+           |
+           v
++----------------------+
+| Interrupt Vector     |
+| Table Lookup (IDT)   |
++----------+-----------+
+           |
+           v
++----------------------+
+| Interrupt Handler    |
+| (OS / Driver ISR)    |
++----------------------+
+
+**Circuit-Style View (How IRQ is Physically Triggered)**
+
+              +5V
+               |
+               |
+             [Pull-up]
+               |
+               +---------------------- IRQ Line --------------------+
+               |                                                     |
+               |                                                     |
+       +-------+-------+                                     +-------+-------+
+       |   Device      |                                     | Interrupt     |
+       |   Controller  |                                     | Controller    |
+       |               |                                     | (PIC/APIC)    |
+       |   Transistor  |                                     |               |
+       |     Switch    |                                     |  IRQ Input    |
+       +-------+-------+                                     +-------+-------+
+               |
+               |
+              GND
+
+**Multiple Devices Sharing Interrupt Logic**
+
+Real systems have many devices:
+
+ Device A ----\
+ Device B -----\ 
+ Device C ------->  IO APIC  ---->  CPU
+ Device D -----/
+ Device E ----/
+
+**Full Interrupt Path (Hardware → OS)**
+
++------------------+
+|  Hardware Device |
+|  (NIC, Disk,     |
+|   Keyboard)      |
++---------+--------+
+          |
+          |  IRQ signal (electrical)
+          v
++----------------------+
+| Interrupt Controller |
+|   IO-APIC / PIC      |
+| - Collects IRQs      |
+| - Prioritizes        |
+| - Routes to CPU      |
++----------+-----------+
+           |
+           | Interrupt message
+           v
++----------------------+
+|  CPU Local APIC      |
+|  (inside CPU)        |
++----------+-----------+
+           |
+           v
++======================+
+|   CPU Interrupt      |
+|   Entry Point        |
++======================+
+
+        ↓ OS takes over ↓
+
++----------------------+
+| Interrupt Descriptor |
+| Table Lookup (IDT)   |
+|  (find handler)      |
++----------+-----------+
+           |
+           v
++----------------------+
+| ISR                  |
+| Interrupt Service    |
+| Routine (Driver)     |
+| Runs at DIRQL        |
++----------+-----------+
+           |
+           v
++----------------------+
+| DPC Queue            |
+| Deferred Procedure   |
+| Call                 |
+| Runs at              |
+| DISPATCH_LEVEL       |
++----------+-----------+
+           |
+           v
++----------------------+
+| Kernel / Driver Work |
+| Normal processing    |
+| PASSIVE_LEVEL        |
++----------+-----------+
+           |
+           v
++----------------------+
+| User Application     |
+| Thread awakened     |
+| (I/O completed)      |
++----------------------+
+
+**Full Interrupt Path — Modern CPU Architecture → OS**
+
+                HARDWARE (Motherboard / CPU)
+
++----------------------+
+|  PCIe Device         |
+|  (NIC / NVMe / GPU)  |
+|                      |
+| Device event occurs  |
++----------+-----------+
+           |
+           | Interrupt (MSI / MSI-X or IRQ)
+           v
++----------------------+
+|   IO APIC            |
+|  Interrupt Controller|
+|                      |
+| - Collect interrupts |
+| - Assign priority    |
+| - Route to CPU core  |
++----------+-----------+
+           |
+           | Interrupt message
+           v
++----------------------+
+|  Local APIC          |
+|  (inside CPU core)   |
+|                      |
+| Decides which core   |
+| handles interrupt    |
++----------+-----------+
+           |
+           v
++======================+
+|  CPU Interrupt Entry |
+|  Context switch      |
++======================+
+
+                OPERATING SYSTEM (Kernel)
+
+           |
+           v
++----------------------+
+| Interrupt Descriptor |
+| Table (IDT) Lookup   |
+|                      |
+| CPU finds ISR entry  |
++----------+-----------+
+           |
+           v
++----------------------+
+| ISR                  |
+| Interrupt Service    |
+| Routine (Driver)     |
+|                      |
+| Runs at DIRQL        |
+| Acknowledge device   |
++----------+-----------+
+           |
+           v
++----------------------+
+| DPC Queue            |
+| Deferred Procedure   |
+| Call                 |
+|                      |
+| Runs at              |
+| DISPATCH_LEVEL       |
++----------+-----------+
+           |
+           v
++----------------------+
+| Kernel / Driver Work |
+|                      |
+| Runs at              |
+| PASSIVE_LEVEL        |
++----------+-----------+
+           |
+           v
++----------------------+
+| User Application     |
+| Thread receives data |
+| (I/O completed)      |
++----------------------+
+
 
