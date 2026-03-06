@@ -1,0 +1,91 @@
+# IRQs and IRQLs -> Are they different or same, or related to each other?
+
+Yes — **IRQ** and **IRQL** are related but **not the same thing**. They come from different layers of how an OS handles interrupts.
+
+---
+
+## 1. IRQ (Interrupt Request)
+
+**IRQ** is a **hardware signal** sent by a device to the CPU to request attention.
+
+Examples:
+
+* Keyboard pressed a key
+* Network card received data
+* Disk finished reading a sector
+
+In traditional PC architecture, each device line is assigned an **IRQ number** (like IRQ0, IRQ1, etc.).
+
+Example mapping (classic PCs):
+
+* **IRQ0** – System timer
+* **IRQ1** – Keyboard
+* **IRQ14** – Primary disk controller
+
+So in simple terms:
+
+➡ **IRQ = a physical hardware interrupt line / signal**
+
+---
+
+## 2. IRQL (Interrupt Request Level)
+
+**IRQL** is a **software priority level used by the Windows kernel** to control interrupt handling.
+
+The Windows kernel (NT architecture) uses IRQLs to decide **what code can run and what interrupts can be processed** at any moment.
+
+Some important Windows IRQL levels:
+
+| IRQL           | Meaning                      |
+| -------------- | ---------------------------- |
+| PASSIVE_LEVEL  | Normal thread execution      |
+| APC_LEVEL      | Asynchronous procedure calls |
+| DISPATCH_LEVEL | Scheduler / spinlocks        |
+| Device IRQLs   | Hardware interrupt handling  |
+| HIGH_LEVEL     | Highest priority             |
+
+When the system raises IRQL:
+
+* Lower-priority interrupts are **blocked**
+* Certain operations (like paging or waiting) **are not allowed**
+
+Example:
+
+* A network interrupt occurs → CPU raises IRQL to that device's level → interrupt handler runs.
+
+So:
+
+➡ **IRQL = OS priority level used by Windows to control interrupt handling**
+
+---
+
+## Key Difference
+
+| Feature | IRQ                         | IRQL                                   |
+| ------- | --------------------------- | -------------------------------------- |
+| Type    | Hardware concept            | Software/kernel concept                |
+| Used by | CPU + hardware              | Windows kernel                         |
+| Purpose | Signal device needs service | Control interrupt priority and masking |
+| Example | IRQ1 (keyboard)             | DISPATCH_LEVEL                         |
+
+---
+
+✅ **Relationship:**
+When a device triggers an **IRQ**, the Windows kernel handles it by **raising the CPU to a corresponding IRQL** so the interrupt handler can run safely.
+
+---
+
+💡 Quick mental model:
+
+* **IRQ → “Hardware yelling at the CPU.”**
+* **IRQL → “Windows deciding what priority that yelling gets.”**
+
+---
+
+These are where IRQL becomes really important.
+
+* **DIRQL vs IRQL**
+* **Why “IRQL_NOT_LESS_OR_EQUAL” BSOD happens**
+* **How spinlocks require DISPATCH_LEVEL**
+
+
