@@ -1,6 +1,6 @@
 **Can you watch or simulate the interrupts in real world?**
 
-Can you simulate this entire flow in real world? Is it something you can do in Windows but see what's happening at the CPU level or need to build your own microprocessor something like Ben Eater did?
+Can you simulate this entire flow in real world? Is it something you can do in Windows but see what's happening at the CPU level or need to build your own microprocessor something like Ben Eater did it [here](https://youtu.be/HyznrdDSSGM?si=rbsQ967q_PU_BCL_)?
 
 **Looks like you can observe and partially simulate this on a real Windows system**, but **you cannot see the exact CPU-internal micro-steps without special tools or hardware**. There are **three practical levels** you can try in the real world.
 
