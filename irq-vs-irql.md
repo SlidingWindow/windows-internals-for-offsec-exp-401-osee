@@ -112,6 +112,7 @@ The CPU pushes these automatically before jumping to the ISR. It’s one of the 
 
 **Hardware Block Diagram (IRQ Path)**
 
+```
 +------------------+
 |  Hardware Device |
 |  (NIC, Disk,    |
@@ -152,9 +153,11 @@ The CPU pushes these automatically before jumping to the ISR. It’s one of the 
 | Interrupt Handler    |
 | (OS / Driver ISR)    |
 +----------------------+
+```
 
 **Circuit-Style View (How IRQ is Physically Triggered)**
 
+```
               +5V
                |
                |
@@ -173,19 +176,23 @@ The CPU pushes these automatically before jumping to the ISR. It’s one of the 
                |
                |
               GND
+```
 
 **Multiple Devices Sharing Interrupt Logic**
 
 Real systems have many devices:
 
+```
  Device A ----\
  Device B -----\ 
  Device C ------->  IO APIC  ---->  CPU
  Device D -----/
  Device E ----/
+```
 
 **Full Interrupt Path (Hardware → OS)**
 
+```
 +------------------+
 |  Hardware Device |
 |  (NIC, Disk,     |
@@ -253,9 +260,11 @@ Real systems have many devices:
 | Thread awakened     |
 | (I/O completed)      |
 +----------------------+
+```
 
 **Full Interrupt Path — Modern CPU Architecture → OS**
 
+```
                 HARDWARE (Motherboard / CPU)
 
 +----------------------+
@@ -337,5 +346,5 @@ Real systems have many devices:
 | Thread receives data |
 | (I/O completed)      |
 +----------------------+
-
+```
 
