@@ -182,5 +182,59 @@ Blocked? → interrupt delayed
 CR8 is actually one of the **least discussed but most critical registers** in Windows kernel interrupt handling. It is the **hardware mechanism behind IRQL on x64 systems**.
 
 ---
+I read somewhere that on x86, the IRQL concept does not exist in hardware and has been simulated in software... on x64, it does exist in hardware and stored in CR8 register.
+
+It appears that that statement is **basically correct** but it's easy to misinterpret.
+
+---
+
+## 1️⃣ x86 (32-bit, legacy)
+
+* **IRQL is purely a software construct** in Windows.
+
+* The CPU itself has **no knowledge of “IRQL”**.
+
+* Windows simulates IRQL by controlling:
+
+  1. **APIC Task Priority Register (TPR)** — memory-mapped I/O in the APIC
+  2. **Interrupt Flag (IF)** in EFLAGS — masks maskable interrupts
+
+* Example: Windows raises IRQL to **DISPATCH_LEVEL** → it writes to **APIC TPR** to block lower-priority interrupts.
+
+* So the **mechanism exists in hardware**, but IRQL itself is **entirely a software-level abstraction**.
+
+---
+
+## 2️⃣ x64 (64-bit)
+
+* Introduces **CR8 (Task Priority Register)**, a **dedicated CPU control register**.
+* **CR8 stores the current “priority threshold”** in hardware.
+* When Windows raises IRQL:
+
+  * It writes to **CR8** instead of memory-mapped APIC registers.
+  * Hardware now automatically blocks interrupts **below that threshold**.
+* So in a sense, **IRQL is now partially implemented in hardware**:
+
+  * The CPU enforces priority filtering using CR8.
+  * Windows still defines **what IRQL levels mean** — CR8 is just the hardware tool.
+
+---
+
+## 3️⃣ Key Distinction
+
+| Feature            | x86 (32-bit)                    | x64 (64-bit)                                          |
+| ------------------ | ------------------------------- | ----------------------------------------------------- |
+| IRQL concept       | Software only                   | Software + hardware support                           |
+| CPU register used  | APIC TPR via memory-mapped I/O  | CR8                                                   |
+| CPU enforcement    | APIC TPR checked for interrupts | CR8 compared automatically against interrupt priority |
+| Masking interrupts | Yes, via APIC TPR               | Yes, via CR8                                          |
+| Exceptions/NMI     | Not affected                    | Not affected                                          |
+
+✅ **Takeaway:**
+
+* **x86:** IRQL exists only as **software bookkeeping**, enforced by writes to APIC registers.
+* **x64:** CR8 provides **hardware-assisted IRQL**, making interrupt masking faster and cleaner.
+
+---
 
 
