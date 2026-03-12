@@ -113,7 +113,46 @@ int main() {
 
 ---
 
-Ah! Now we’re getting into the **practical side of APCs**. Windows uses APCs internally in several situations, mainly to let threads handle **asynchronous work or deferred callbacks** safely. Here’s a clear breakdown:
+---
+
+Asynchronous Procedure Call (APC) – Visual Diagram
+
+```
+Time →
+Main Thread:
+┌────────────────────────────┐
+│ Create Worker Thread        │
+└────────────────────────────┘
+│
+▼
+Worker Thread:
+┌────────────────────────────┐
+│ Running normally            │
+└────────────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ Enter alertable wait        │  ← SleepEx(..., TRUE)
+└────────────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ APC Queued (MyAPC)         │
+│ Executed here automatically│
+└────────────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ Continue normal execution  │
+└────────────────────────────┘
+```
+
+### Notes:
+
+- The **APC is queued** by `QueueUserAPC` from another thread.  
+- The **worker thread executes the APC only when it enters an alertable wait** (`SleepEx`, `WaitForSingleObjectEx`, etc.).  
+- This allows **asynchronous callbacks without polling**.  
+- Multiple APCs can be queued; they execute in **FIFO order** when the thread is alertable.
 
 ---
 
@@ -182,7 +221,7 @@ This is why APCs are **deferred** — they wait until the thread voluntarily ent
 
 ---
 
-### Quick Summary Table
+### Summary
 
 | APC Type        | Queued By                  | Executes When                    | Use Case                                                |
 | --------------- | -------------------------- | -------------------------------- | ------------------------------------------------------- |
@@ -192,48 +231,6 @@ This is why APCs are **deferred** — they wait until the thread voluntarily ent
 ---
 
 
----
-
-Asynchronous Procedure Call (APC) – Visual Diagram
-
-```
-Time →
-Main Thread:
-┌────────────────────────────┐
-│ Create Worker Thread        │
-└────────────────────────────┘
-│
-▼
-Worker Thread:
-┌────────────────────────────┐
-│ Running normally            │
-└────────────────────────────┘
-│
-▼
-┌────────────────────────────┐
-│ Enter alertable wait        │  ← SleepEx(..., TRUE)
-└────────────────────────────┘
-│
-▼
-┌────────────────────────────┐
-│ APC Queued (MyAPC)         │
-│ Executed here automatically│
-└────────────────────────────┘
-│
-▼
-┌────────────────────────────┐
-│ Continue normal execution  │
-└────────────────────────────┘
-```
-
-### Notes:
-
-- The **APC is queued** by `QueueUserAPC` from another thread.  
-- The **worker thread executes the APC only when it enters an alertable wait** (`SleepEx`, `WaitForSingleObjectEx`, etc.).  
-- This allows **asynchronous callbacks without polling**.  
-- Multiple APCs can be queued; they execute in **FIFO order** when the thread is alertable.
-
----
 
 
 
