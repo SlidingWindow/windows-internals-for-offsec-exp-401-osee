@@ -174,3 +174,25 @@ int main() {
     return 0;
 }
 ```
+
+#### Expected Output
+
+=== Manual-Reset Event Demo ===
+Thread 1 waiting for manual-reset event...
+Thread 2 waiting for manual-reset event...
+Thread 3 waiting for manual-reset event...
+Main thread signals manual-reset event!
+Thread 1 proceeding after manual-reset event.
+Thread 2 proceeding after manual-reset event.
+Thread 3 proceeding after manual-reset event.
+
+=== Auto-Reset Event Demo ===
+Thread 1 waiting for auto-reset event...
+Thread 2 waiting for auto-reset event...
+Thread 3 waiting for auto-reset event...
+Main thread signals auto-reset event!
+Thread 1 proceeding after auto-reset event.
+Main thread signals auto-reset event!
+Thread 2 proceeding after auto-reset event.
+Main thread signals auto-reset event!
+Thread 3 proceeding after auto-reset event.
