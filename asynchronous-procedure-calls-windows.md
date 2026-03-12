@@ -1,8 +1,4 @@
-Perfect! Let’s dive into **Asynchronous Procedure Calls (APCs)** in Windows. I’ll make it **clear, concise, and exam/lab-friendly**.
 
----
-
-````markdown id="apc-notes"
 # Asynchronous Procedure Calls (APCs) – Windows
 
 ---
@@ -115,7 +111,50 @@ int main() {
 > Think APC = “queue a task for a thread, executed when the thread is ready (alertable)”.
 > Useful for asynchronous I/O or callback scenarios in Windows.
 
+---
+
+Asynchronous Procedure Call (APC) – Visual Diagram
+
+```
+Time →
+Main Thread:
+┌────────────────────────────┐
+│ Create Worker Thread        │
+└────────────────────────────┘
+│
+▼
+Worker Thread:
+┌────────────────────────────┐
+│ Running normally            │
+└────────────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ Enter alertable wait        │  ← SleepEx(..., TRUE)
+└────────────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ APC Queued (MyAPC)         │
+│ Executed here automatically│
+└────────────────────────────┘
+│
+▼
+┌────────────────────────────┐
+│ Continue normal execution  │
+└────────────────────────────┘
 ```
 
+### Notes:
+
+- The **APC is queued** by `QueueUserAPC` from another thread.  
+- The **worker thread executes the APC only when it enters an alertable wait** (`SleepEx`, `WaitForSingleObjectEx`, etc.).  
+- This allows **asynchronous callbacks without polling**.  
+- Multiple APCs can be queued; they execute in **FIFO order** when the thread is alertable.
+
 ---
+
+
+
+
 
