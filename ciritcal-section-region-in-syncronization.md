@@ -121,6 +121,206 @@ Person B → waits until key is free
 
 ---
 
-## Simple Definition (Exam Ready)
+## Simple Definition
 
 A **Critical Region** is a section of code that accesses shared data and must be executed by only one thread at a time to avoid race conditions.
+
+---
+
+# Lab – Process Synchronization Using Mutex
+
+## Goal
+
+This lab demonstrates how to synchronize two processes that access the same file using a **mutex** to protect a **critical region**.
+
+Two program instances will write to the same file.
+Synchronization ensures the file is not corrupted.
+
+---
+
+## Shared Resource
+
+File used in this lab:
+
+```text
+D:\logs\output.txt
+```
+
+Both processes will write into this file.
+
+---
+
+## Concepts Used
+
+* Critical Region
+* Mutex
+* Process synchronization
+* Wait / Lock
+* Release / Unlock
+* Shared file access
+
+---
+
+## Critical Region in this program
+
+The critical region is the part of code that writes to the file.
+
+```
+lock mutex
+
+write to file
+
+unlock mutex
+```
+
+Only one process must execute this at a time.
+
+---
+
+## Diagram – With Mutex
+
+```
+Program A ----\
+               >---[ LOCK ]--- Critical Region ---[ UNLOCK ]--- File
+Program B ----/
+```
+
+Only one program writes at a time.
+
+Example result:
+
+```
+PID 3201
+PID 3201
+PID 8744
+PID 8744
+PID 3201
+```
+
+Correct output.
+
+---
+
+## Diagram – Without Mutex
+
+```
+Program A ----\
+               >---- Writing at same time ----> File damaged
+Program B ----/
+```
+
+Example result:
+
+```
+PI32PID 874D 3201P44ID 32
+```
+
+Output is mixed → race condition.
+
+---
+
+## Steps
+
+### 1. Create console project
+
+```
+Name: FileSyncTest
+```
+
+---
+
+### 2. Create mutex
+
+```
+CreateMutex(
+    NULL,
+    FALSE,
+    "FileWriteLock"
+);
+```
+
+This mutex will be shared between processes.
+
+---
+
+### 3. Open or create file
+
+```
+D:\logs\output.txt
+```
+
+Create folder if needed.
+
+---
+
+### 4. Loop many times
+
+Each loop writes the process id.
+
+```
+GetCurrentProcessId()
+```
+
+---
+
+### 5. Protect critical region
+
+```
+WaitForSingleObject(lock, INFINITE)
+
+write to file
+
+ReleaseMutex(lock)
+```
+
+This ensures only one process writes at a time.
+
+---
+
+## Why waiting is needed
+
+```
+WaitForSingleObject → take lock
+ReleaseMutex → free lock
+```
+
+If lock is busy → process waits.
+
+---
+
+## Run two programs
+
+Run twice:
+
+```
+FileSyncTest.exe
+FileSyncTest.exe
+```
+
+Both write to same file.
+
+---
+
+## Result with mutex
+
+* No broken text
+* Safe writing
+* Correct order
+
+---
+
+## Result without mutex
+
+Remove lock/unlock code and run again.
+
+Result:
+
+* mixed text
+* corrupted lines
+* race condition
+
+This proves the need for a critical region.
+
+---
+
+
