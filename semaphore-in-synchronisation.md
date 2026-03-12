@@ -357,3 +357,26 @@ int main()
     return 0;
 }
 ```
+
+#### Expected Output
+
+```
+=== Mutex Demo ===
+Thread 1 incremented counter to 1
+Thread 2 incremented counter to 2
+Thread 3 incremented counter to 3
+Thread 4 incremented counter to 4
+Thread 5 incremented counter to 5
+
+=== Semaphore Demo ===
+Thread 1 is using the limited resource...
+Thread 2 is using the limited resource...
+Thread 1 finished using the resource.
+Thread 3 is using the limited resource...
+Thread 2 finished using the resource.
+Thread 4 is using the limited resource...
+Thread 3 finished using the resource.
+Thread 5 is using the limited resource...
+Thread 4 finished using the resource.
+Thread 5 finished using the resource.
+```
