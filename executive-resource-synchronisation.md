@@ -130,3 +130,76 @@ Thread 4 ──[READ]─────────────  (after Thread 3 fi
 - **Exclusive mode** = only one writer at a time  
 - **Upgrade/Downgrade** allows threads to switch from shared → exclusive or vice versa  
 - Used by Windows kernel for high-concurrency structures like registry, file systems, memory manager
+
+---
+
+Simple program to demonstrate the real world usage of Executive Resource.
+
+```cpp
+// File: ExecutiveResourceDemo.cpp
+#include <windows.h>
+#include <iostream>
+#include <thread>
+#include <vector>
+
+using namespace std;
+
+// Shared data
+int sharedCounter = 0;
+
+// SRWLOCK: simulates ERESOURCE (shared/exclusive access)
+SRWLOCK g_lock;
+
+// Reader function (shared access)
+void reader(int id) {
+    AcquireSRWLockShared(&g_lock);  // shared/read lock
+    cout << "Reader " << id << " reads sharedCounter = " << sharedCounter << endl;
+    this_thread::sleep_for(chrono::milliseconds(500)); // simulate read work
+    ReleaseSRWLockShared(&g_lock);
+}
+
+// Writer function (exclusive access)
+void writer(int id) {
+    AcquireSRWLockExclusive(&g_lock); // exclusive/write lock
+    sharedCounter++;
+    cout << "Writer " << id << " increments sharedCounter to " << sharedCounter << endl;
+    this_thread::sleep_for(chrono::milliseconds(1000)); // simulate write work
+    ReleaseSRWLockExclusive(&g_lock);
+}
+
+int main() {
+    // Initialize SRWLOCK
+    InitializeSRWLock(&g_lock);
+
+    vector<thread> threads;
+
+    cout << "=== Reader/Writer Demo ===\n";
+
+    // Start readers
+    for (int i = 1; i <= 3; i++)
+        threads.push_back(thread(reader, i));
+
+    // Start writers
+    for (int i = 1; i <= 2; i++)
+        threads.push_back(thread(writer, i));
+
+    // Wait for all threads
+    for (auto& t : threads) t.join();
+
+    cout << "Final sharedCounter = " << sharedCounter << endl;
+
+    return 0;
+}
+```
+
+#### Expected Output
+
+```
+=== Reader/Writer Demo ===
+Reader 1 reads sharedCounter = 0
+Reader 2 reads sharedCounter = 0
+Reader 3 reads sharedCounter = 0
+Writer 1 increments sharedCounter to 1
+Writer 2 increments sharedCounter to 2
+Final sharedCounter = 2
+```
