@@ -113,6 +113,87 @@ int main() {
 
 ---
 
+Ah! Now we’re getting into the **practical side of APCs**. Windows uses APCs internally in several situations, mainly to let threads handle **asynchronous work or deferred callbacks** safely. Here’s a clear breakdown:
+
+---
+
+## When Windows Uses APCs
+
+### 1. **Asynchronous I/O**
+
+* When you perform asynchronous I/O (`ReadFileEx`, `WriteFileEx`) in Windows, the **kernel queues a user-mode APC** to the thread that initiated the I/O.
+* The APC executes **when the thread enters an alertable wait**, letting the thread process I/O completion **without polling**.
+
+**Example:**
+
+```cpp
+ReadFileEx(hFile, buffer, size, &overlapped, MyAPC); 
+```
+
+* `MyAPC` will be called once the read is complete, **while the thread is waiting alertably**.
+
+---
+
+### 2. **Thread Notifications / Deferred Work**
+
+* Windows kernel can queue APCs to notify threads of **system events** or **completion of some kernel work**.
+* APC allows these notifications to happen **in the thread context** rather than in arbitrary kernel threads, which is safer.
+
+---
+
+### 3. **Timers**
+
+* APCs are used by **timer objects** that execute callbacks after a specified timeout.
+* Functions like `CreateTimerQueueTimer` can queue an APC when the timer expires.
+
+---
+
+### 4. **Kernel-Mode APCs**
+
+* Certain **kernel operations** automatically queue **kernel-mode APCs** to threads, e.g.:
+
+  * Memory management events
+  * File system I/O completions
+  * APCs that run in kernel-mode (not user-mode) to notify the thread that a kernel resource is ready
+
+> Note: Kernel-mode APCs are invisible to normal user-mode code. User-mode APCs require the thread to be in **alertable wait**.
+
+---
+
+### 5. **Thread Alertable Waits**
+
+* APCs only execute when a thread calls a function like:
+
+  * `SleepEx(timeout, TRUE)`
+  * `WaitForSingleObjectEx(handle, timeout, TRUE)`
+  * `WaitForMultipleObjectsEx(handles, timeout, TRUE)`
+
+This is why APCs are **deferred** — they wait until the thread voluntarily enters an **alertable state**.
+
+---
+
+### Real-World Analogy
+
+* APC = “post-it note for a thread”:
+
+  * Thread does other work normally.
+  * When it **pauses to check messages** (alertable wait), the note (APC) executes.
+* It’s like scheduling a small task **without interrupting the thread**, but guaranteeing it will execute **in the thread’s own context**.
+
+---
+
+### Quick Summary Table
+
+| APC Type        | Queued By                  | Executes When                    | Use Case                                                |
+| --------------- | -------------------------- | -------------------------------- | ------------------------------------------------------- |
+| User-mode APC   | `QueueUserAPC` / async I/O | Thread enters alertable wait     | Asynchronous I/O callbacks, deferred work               |
+| Kernel-mode APC | Kernel                     | Thread executes kernel APC queue | I/O completions, memory notifications, driver callbacks |
+
+---
+
+
+---
+
 Asynchronous Procedure Call (APC) – Visual Diagram
 
 ```
