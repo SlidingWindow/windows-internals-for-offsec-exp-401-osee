@@ -111,10 +111,12 @@ No blocking occurs because all threads are reading (shared mode)
 ## Exclusive Access (Write)
 Only one thread can write at a time.
 
+```
 Time -->
 Thread 1 ──[WRITE]───────────────
 Thread 2 ── waits until Thread 1 releases
 Thread 3 ── waits until Thread 1 releases
+```
 
 Only one thread in the critical region; others wait
 
