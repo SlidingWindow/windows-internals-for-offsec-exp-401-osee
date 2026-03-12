@@ -323,4 +323,91 @@ This proves the need for a critical region.
 
 ---
 
+Simple C/C++ Program
 
+```C
+// File: SyncDemo.cpp
+#include <windows.h>
+#include <iostream>
+#include <thread>
+#include <vector>
+
+using namespace std;
+
+// Mutex for exclusive access
+HANDLE g_mutex;
+
+// Semaphore for limited resources (e.g., 2 printers)
+HANDLE g_semaphore;
+
+// Shared file simulation
+int sharedCounter = 0;
+
+// ---------------------------
+// Function that uses Mutex
+void writeToSharedResource(int id)
+{
+    // Lock the mutex
+    WaitForSingleObject(g_mutex, INFINITE);
+
+    // Critical Region
+    sharedCounter++;
+    cout << "Thread " << id << " incremented counter to " << sharedCounter << endl;
+
+    // Unlock the mutex
+    ReleaseMutex(g_mutex);
+}
+
+// ---------------------------
+// Function that uses Semaphore
+void useLimitedResource(int id)
+{
+    // Wait (decrease count) – only 2 threads allowed at a time
+    WaitForSingleObject(g_semaphore, INFINITE);
+
+    // Critical Region (simulate resource usage)
+    cout << "Thread " << id << " is using the limited resource..." << endl;
+    Sleep(1000); // simulate work
+    cout << "Thread " << id << " finished using the resource." << endl;
+
+    // Signal (increase count)
+    ReleaseSemaphore(g_semaphore, 1, NULL);
+}
+
+// ---------------------------
+int main()
+{
+    // Create Mutex
+    g_mutex = CreateMutex(NULL, FALSE, NULL);
+
+    // Create Semaphore with max 2 resources
+    g_semaphore = CreateSemaphore(NULL, 2, 2, NULL);
+
+    // Create threads
+    vector<thread> threads;
+
+    // Demonstrate Mutex usage
+    cout << "=== Mutex Demo ===" << endl;
+    for (int i = 1; i <= 5; i++)
+        threads.push_back(thread(writeToSharedResource, i));
+
+    for (auto& t : threads) t.join();
+    threads.clear();
+
+    // Reset counter
+    sharedCounter = 0;
+
+    // Demonstrate Semaphore usage
+    cout << "\n=== Semaphore Demo ===" << endl;
+    for (int i = 1; i <= 5; i++)
+        threads.push_back(thread(useLimitedResource, i));
+
+    for (auto& t : threads) t.join();
+
+    // Cleanup
+    CloseHandle(g_mutex);
+    CloseHandle(g_semaphore);
+
+    return 0;
+}
+```
