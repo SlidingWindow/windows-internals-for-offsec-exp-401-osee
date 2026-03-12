@@ -26,12 +26,14 @@ It is used internally by the Windows kernel to manage **complex resources** like
 
 ## Comparison to Mutex / Semaphore
 
+```
 | Feature   | Mutex           | Semaphore         | Executive Resource                                       |
 | --------- | --------------- | ----------------- | -------------------------------------------------------- |
 | Access    | Exclusive only  | Limited count     | Shared (read) or Exclusive (write)                       |
 | Ownership | Yes             | No                | Yes (thread that acquires owns access)                   |
 | Wait      | Single thread   | Limited N threads | Shared threads can coexist; exclusive blocks all others  |
 | Use case  | Critical region | Limited resource  | Kernel data structures requiring read/write coordination |
+```
 
 ---
 
@@ -52,6 +54,7 @@ It is used internally by the Windows kernel to manage **complex resources** like
 
 For kernel-mode programming:
 
+```
 | Function                         | Purpose                          |
 | -------------------------------- | -------------------------------- |
 | `ExInitializeResourceLite`       | Initialize the ERESOURCE object  |
@@ -59,6 +62,7 @@ For kernel-mode programming:
 | `ExAcquireResourceExclusiveLite` | Acquire exclusive (write) access |
 | `ExReleaseResourceLite`          | Release the resource             |
 | `ExDeleteResourceLite`           | Delete the resource object       |
+```
 
 > Note: These are **kernel-mode functions** – cannot be used directly in user-mode applications.
 
@@ -92,11 +96,13 @@ For kernel-mode programming:
 ## Shared Access (Read)
 Multiple threads can read simultaneously.
 
+```
 Time -->
 Thread 1 ──[READ]─────────────
 Thread 2 ──[READ]─────────────
 Thread 3 ──[READ]─────────────
 Thread 4 ──[READ]─────────────
+```
 
 No blocking occurs because all threads are reading (shared mode)
 
@@ -117,6 +123,7 @@ Only one thread in the critical region; others wait
 ## Mixed Access Example
 Shared threads + Exclusive thread
 
+```
 Time -->
 Thread 1 ──[READ]─────────────
 Thread 2 ──[READ]─────────────
@@ -124,6 +131,7 @@ Thread 3 ──[WRITE]── waits until Thread 1 & 2 finish
 Thread 4 ──[READ]── waits because Thread 3 is writing
 Thread 3 ──[WRITE]─────────────
 Thread 4 ──[READ]─────────────  (after Thread 3 finishes)
+```
 
 ### Notes:
 - **Shared mode** = multiple readers at once  
