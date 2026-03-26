@@ -1,7 +1,3 @@
-Haha, love the energy! 😄 Alright, let’s make this visually intuitive. I’ll create a **diagram-rich Markdown version** so you can literally *see* what we’ve been talking about — segment:offset, TEB/KPCR, and CPU registers as flip-flops.
-
-Here’s the enhanced version:
-
 ---
 
 # Chapter: Understanding x86 Registers, Segmentation, and Memory in Windows (Diagram Version)
@@ -157,4 +153,167 @@ FF = Flip-Flop (1 bit)
 * Segmentation was replaced by paging, but FS/GS remain handy shortcuts.
 
 ---
+
+### 🕹️ How 32-bit programs run on 64-bit CPUs
+
+A **64-bit CPU** is designed to be **backward compatible**. That means it can run older 32-bit programs almost as if it were a 32-bit CPU. Here’s how it works:
+
+---
+
+### 1. **CPU modes**
+
+Most 64-bit CPUs (like **x86-64**) have multiple operating modes:
+
+* **64-bit mode** – Full 64-bit instructions, registers, and memory addressing
+* **Compatibility mode** – Special mode that lets **32-bit programs run**
+* **Legacy mode** – For 16-bit programs (rarely used today)
+
+When a 32-bit program runs, the CPU switches into **compatibility mode**.
+
+---
+
+### 2. **Registers**
+
+* Registers are the tiny storage spaces inside the CPU for calculations.
+* In 32-bit mode, the CPU only uses **the lower 32 bits** of its 64-bit registers.
+* To the program, it’s like it’s running on a regular 32-bit CPU—it doesn’t even know the CPU has 64-bit capability.
+
+---
+
+### 3. **Memory addressing**
+
+* The 32-bit program can only use **4 GB of virtual memory**, even on a 64-bit system.
+* But the 64-bit OS can map those addresses anywhere in **physical RAM**, so multiple 32-bit programs can coexist without conflict.
+
+---
+
+### 4. **Operating system support**
+
+* The **OS kernel** manages the switching between 32-bit and 64-bit mode.
+* It intercepts memory and instruction requests, making the 32-bit program think it’s on a 32-bit machine.
+
+---
+
+### ⚡ Analogy
+
+Think of it like a bilingual teacher:
+
+* The CPU “speaks” 64-bit fluently.
+* But when a 32-bit program shows up, the CPU switches to “32-bit mode” and **pretends it’s only 32-bit**, so the program doesn’t get confused.
+
+---
+
+So backward compatibility is really just clever **mode-switching + partial register use + OS help**. That’s why old programs still work beautifully on modern 64-bit computers.
+
+---
+
+### **Diagram: 32-bit vs 64-bit CPU Modes**
+
+```
+           ┌───────────────────────────────┐
+           │        64-bit CPU             │
+           │                               │
+           │  ┌───────────────┐            │
+           │  │ 64-bit mode   │ <- Full 64-bit registers
+           │  │               │    & can address huge memory
+           │  └───────────────┘
+           │                               │
+           │  ┌────────────────────────┐   │
+           │  │ Compatibility mode     │ <- For 32-bit programs
+           │  │ 32-bit registers only │
+           │  │ Max 4GB memory        │
+           │  └────────────────────────┘
+           │                               │
+           │  ┌───────────────┐            │
+           │  │ Legacy mode    │ <- Rare, 16-bit programs
+           │  └───────────────┘
+           └───────────────────────────────┘
+
+Memory Access:
+─────────────────────────────
+| 64-bit program → can use huge RAM  |
+| 32-bit program → sees only 4 GB    |
+| OS maps both types without conflict|
+─────────────────────────────
+```
+
+---
+
+### 🔑 Key Points from Diagram
+
+1. **CPU can “pretend” to be 32-bit** using compatibility mode.
+2. **32-bit programs see only 4 GB of memory**, even though the system has much more.
+3. **64-bit programs get full access** to extended memory and wider registers.
+4. OS manages the memory mapping so multiple programs coexist safely.
+
+---
+
+### **Diagram: CPU Registers & Memory Access**
+
+```
+          ┌─────────────────────────────┐
+          │         64-bit CPU          │
+          │                             │
+          │  Registers:                 │
+          │  ┌─────────────────────┐    │
+          │  │ RAX (64-bit)        │ <- Full 64-bit register
+          │  │ RBX, RCX, RDX ...   │    │
+          │  └─────────────────────┘    │
+          │                             │
+          │  ┌─────────────────────┐    │
+          │  │ Compatibility Mode  │ <- For 32-bit programs
+          │  │ Lower 32 bits used  │
+          │  │ e.g., EAX, EBX ... │ <- 32-bit registers
+          │  │ Max 4 GB memory     │
+          │  └─────────────────────┘
+          │                             │
+          │  ┌─────────────────────┐    │
+          │  │ Memory Bus           │ <- Routes memory requests
+          │  │ (64-bit wide)        │
+          │  │ Maps both 32 & 64-bit│
+          │  └─────────────────────┘
+          └─────────────────────────────┘
+
+Memory Access Examples:
+─────────────────────────────────────
+64-bit Program:
+   Registers: RAX, RBX, ...
+   Memory: Can access huge RAM
+
+32-bit Program:
+   Registers: EAX, EBX, ...
+   Memory: Limited to 4 GB
+   OS maps 32-bit addresses into physical RAM safely
+─────────────────────────────────────
+```
+
+---
+
+### 🔑 How It Works Step by Step
+
+1. **CPU sees program type**: 32-bit or 64-bit.
+2. **Switches mode**:
+
+   * 64-bit → uses full 64-bit registers & addressing
+   * 32-bit → uses lower 32 bits of registers, compatibility mode
+3. **Memory requests go through same 64-bit bus**
+
+   * OS maps the 32-bit addresses to physical RAM locations
+   * Multiple 32-bit programs can run without conflict
+4. **Programs don’t know the difference**
+
+   * A 32-bit program thinks it’s on a 32-bit CPU
+   * A 64-bit program sees the full power
+
+---
+
+💡 **Analogy:**
+
+* CPU = superhighway system
+* 64-bit programs = big trucks using full lanes
+* 32-bit programs = small cars limited to part of the lanes
+* OS = traffic controller making sure everyone gets through safely
+
+---
+
 
