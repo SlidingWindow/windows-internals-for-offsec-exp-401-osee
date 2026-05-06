@@ -184,5 +184,3 @@ If you want *real‑time visualization*:
 This gives you the closest practical view of the **interrupt pipeline in action**.
 
 ---
-
-If you want, I can give you a **step‑by‑step tutorial** with commands/screenshots to record a real interrupt session and interpret it in WPA — just say so.
