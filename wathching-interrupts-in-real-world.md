@@ -190,7 +190,7 @@ You can **watch packet interrupts trigger driver activity in real time**.
 
 ---
 
-# 🧠 My recommendation (best learning path)
+# 🧠 Recommendation (best learning path)
 
 If you want to **really understand the whole pipeline**, try this order:
 
@@ -203,7 +203,7 @@ That combination gives you **hardware intuition + real OS behavior**.
 
 ---
 
-💡 If you're curious, I can also show you something **really fascinating**:
+Something **really fascinating**:
 
 **How a network packet travels from the Ethernet wire to a user program in ~300 CPU instructions.**
 
