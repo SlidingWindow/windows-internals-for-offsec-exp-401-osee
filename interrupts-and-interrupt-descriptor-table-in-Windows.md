@@ -242,12 +242,9 @@ IntVideoPortInterruptRoutine(
 ```
 
 ### Note about search completeness
-My code-search tool only returns up to 10 matches per query, so there may be more references elsewhere in the repo.
+This information is based on an open-source project call ReactOS. To browse more occurrences in GitHub’s UI, use:
 
-To browse more occurrences in GitHub’s UI, use:
 ```text name=github-search.txt
 https://github.com/reactos/reactos/search?q=_kinterrupt&type=code
 ```
-
-If you tell me *where* you saw `_kinterrupt` (file path / snippet), I can explain that specific usage (e.g., why it’s a pointer, how the lock is acquired, etc.).
 
