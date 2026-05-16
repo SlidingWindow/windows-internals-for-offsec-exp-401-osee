@@ -128,3 +128,37 @@ By pairing the signature-checking power of Secure Boot with the hardware-isolate
 
 ---
 
+## 7. TPM 2.0 Vulnerabilities
+
+The TPM 2.0 standard and the actual chips themselves have definitely had their share of vulnerabilities and targeted attacks over the last few years! 🪙
+
+Because the TPM is designed to be the ultimate hardware vault, security researchers are constantly poking at it to find cracks. When a flaw is found in a TPM, it is a big deal because it can potentially expose encryption keys (like BitLocker) that are supposed to be physically protected.
+
+Here are a few of the most significant TPM 2.0 vulnerabilities and attack vectors discovered recently:
+
+### 1. TPM 2.0 Module Buffer Overflows (2023) 🐛
+
+Security researchers discovered two major vulnerabilities (CVE-2023-1017 and CVE-2023-1018) directly inside the official TPM 2.0 specification architecture.
+
+* 🔍 **The Flaw:** There was a flaw in how the TPM handled specific internal commands, leading to a "buffer overflow" (where data spills over its allowed memory boundary).
+* ⚠️ **The Impact:** An attacker who already had administrative access to the operating system could send a maliciously crafted command to the TPM and execute rogue code *inside* the TPM's isolated memory, potentially scraping cryptographic keys. Because this was a flaw in the design standard itself, it affected billions of devices using chips from various manufacturers.
+
+### 2. Physical Interception: The TPM Sniffing Attack 🕵️‍♂️
+
+This is a classic physical attack that has become much easier to execute in recent years using cheap, off-the-shelf hardware (like a $10 Raspberry Pi Pico).
+
+* 🚌 **The Flaw:** On many motherboards, a discrete TPM (dTPM) chip communicates with the main CPU via a physical wiring pathway on the board called the **SPI Bus**. While the data inside the TPM chip is encrypted, the data traveling across those physical wires during boot often was *not* encrypted.
+* ⚠️ **The Impact:** If an attacker gets physical possession of a stolen laptop, they can attach tiny probes to the SPI bus wires on the motherboard. When the computer turns on, they can literally "sniff" the BitLocker decryption key out of the airwaves as it travels from the TPM to the CPU, completely bypassing the drive encryption.
+
+### 3. Fault Injection / Voltage Glitching ⚡
+
+This is a highly sophisticated hardware attack usually performed in a lab setting, but it presents a real threat to high-value targets (like a lost corporate laptop or a cloud server).
+
+* 🔬 **The Flaw:** Hardware chips require a precise, steady electrical voltage to execute commands properly.
+* ⚠️ **The Impact:** By using specialized hardware to deliver a microscopic pulse of incorrect voltage (a "glitch") at the exact millisecond the TPM is checking a password or verifying a state, attackers can corrupt the chip's internal logic. This can trick the TPM into skipping a security check entirely, granting access to locked cryptographic keys.
+
+---
+
+### Modern Countermeasures: TPM Parameter Encryption 🛡️
+
+To fight back against these attacks—especially the physical wire-sniffing—Microsoft and chipmakers introduced **TPM Parameter Encryption**. Modern operating systems can now encrypt the data *before* it leaves the CPU, ensuring that even if a hacker taps into the physical motherboard wires, they only see garbled, unreadable data.
