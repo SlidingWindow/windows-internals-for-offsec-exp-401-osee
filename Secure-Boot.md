@@ -105,9 +105,41 @@ Through this multi-layered framework—anchored in unchangeable CPU silicon, iso
 ---
 
 
+## 5. How is it then possible to update your system's UEFI firmware by running vendor provided EXE files directly from Windows?
+
+The secret lies in the fact that those `.exe` update files don't actually rewrite the SPI Flash chip while Windows is running. Instead, they use a highly privileged "hand-off" protocol to ask the hardware to do it during the next boot sequence.
+
+Here is the exact workflow of how a Windows utility updates your firmware:
+
+### 1. The Capsule Update Method (The Hand-off) 💊
+
+Modern systems use a standard called **UEFI Capsule Updates**.
+
+* Instead of writing to the chip directly, the Windows installer copies the new firmware file into a standard file format (a "capsule").
+* It places this capsule into the **EFI System Partition** on your hard drive or stores it in a protected section of RAM.
+* The installer then sets a specific flag in the NVRAM called `UpdateCapsule` and triggers a system restart.
+
+### 2. The SMM Gatekeeper Takes Over 🔐
+
+When the computer reboots, *before* Windows or any user code can run, the existing UEFI firmware detects that `UpdateCapsule` flag.
+
+The CPU enters a special, hidden execution mode called **System Management Mode (SMM)**. SMM is a hardware-enforced mode that operates underneath the operating system. Only code running in SMM has the authorization to unlock the **SPI Controller** registers we discussed.
+
+The trusted SMM code verifies the digital signature of the new firmware capsule using the **Platform Key (PK)**. If the signature is valid, the SMM code temporarily disables the write-protection on the SPI Flash chip, flashes the update, and immediately locks the chip down again.
+
+---
+
+### Let's Tie It Together
+
+This is why you can safely initiate an update from Windows: the operating system is only delivering the package to the doorstep. The actual unlocking and writing are performed by the hardware itself during boot.
+
+Now that we see how the system handles a *legitimate* update via a signed capsule, let's think about a malicious scenario. If malware with full administrative SYSTEM privileges tries to fake an update by pushing its own modified capsule file into the queue, what specific checkpoint in this process will stop that malicious firmware from being flashed onto the motherboard?
+
 Yes, there have been several major, real-world attacks on Secure Boot recently. In fact, the last 3-4 years have seen some of the most significant firmware vulnerabilities ever discovered.
 
 Because Secure Boot relies on a complex chain of code, hackers don't usually try to crack the cryptography. Instead, they look for flaws in how the code is written, allowing them to bypass the signature checks entirely.
+
+## 5. Recent Vulnerabilities in Secure Boot!
 
 Here are three of the most notable attacks and vulnerabilities discovered between 2023 and 2026:
 
