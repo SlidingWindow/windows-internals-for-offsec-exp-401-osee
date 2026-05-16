@@ -1,6 +1,6 @@
 # The Hardware Vault: An In-Depth Guide to the Trusted Platform Module (TPM 2.0)
 
-While **Secure Boot** acts as the gatekeeper to ensure only trusted software runs during startup, modern operating systems like Windows 11 require a dedicated hardware partner to protect sensitive data after the machine boots. This partner is the **Trusted Platform Module (TPM)**.
+While **Secure Boot** ([more info here](https://github.com/SlidingWindow/windows-internals-for-offsec-exp-401-osee/blob/main/Secure-Boot.md)) acts as the gatekeeper to ensure only trusted software runs during startup, modern operating systems like Windows 11 require a dedicated hardware partner to protect sensitive data after the machine boots. This partner is the **Trusted Platform Module (TPM)**.
 
 This paper explores the architecture of the TPM 2.0 standard, its core cryptographic features, and the precise workflows it uses to verify system integrity and protect user data.
 
